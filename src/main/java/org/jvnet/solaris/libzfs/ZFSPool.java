@@ -30,6 +30,8 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.ptr.PointerByReference;
 
+import java.util.regex.Pattern;
+
 /**
  * zpool, which is a storage abstraction.
  *
@@ -99,26 +101,35 @@ public final class ZFSPool {
         return toSize(getProperty(zpool_prop_t.ZPOOL_PROP_ALLOCATED));
     }
 
+    private static final Pattern PATTERN_NUMERIC = Pattern.compile("^\\d+$");
+    private static final Pattern PATTERN_NUMERIC_OR_DECIMAL = Pattern.compile("^\\d+(?:[,.]\\d+)?$");
+    
     /**
-     * @param value
+     * @param formattedSizeString
      *      String that represents a size
      */
-    private long toSize(String value) {
-        value = value.toUpperCase();
-        double d = Double.parseDouble(value.substring(0,value.length()-1));
+    private long toSize(String formattedSizeString) {
+        if (PATTERN_NUMERIC.matcher(formattedSizeString).matches()) {
+            return Long.parseLong(formattedSizeString);
+        }
+        final int sizeStringLength = formattedSizeString.length() - 1;
+        final String sizeString = formattedSizeString.substring(0, sizeStringLength);
+        if (!PATTERN_NUMERIC_OR_DECIMAL.matcher(sizeString).matches()) {
+            throw new ZFSException(this.library, String.format("Formatted size string \"%s\" is neither numeric nor decimal", formattedSizeString));
+        }
+        final char sizeMagnitude = formattedSizeString.toUpperCase().charAt(sizeStringLength);
         long multiplier = 1;
-        switch(value.charAt(value.length()-1)) {
+        switch(sizeMagnitude) {
         case 'P':   multiplier *= 1024; // fall through
         case 'T':   multiplier *= 1024; // fall through
         case 'G':   multiplier *= 1024; // fall through
         case 'M':   multiplier *= 1024; // fall through
-        case 'K':   multiplier *= 1024; // fall through
+        case 'K':   multiplier *= 1024; break;
+        default: throw new ZFSException(this.library, String.format("Formatted size string \"%s\" contains illegal symbols", formattedSizeString));
         }
-
-        if(multiplier==1)   return (long)d;
-
+        final double sizeDouble = Double.parseDouble(sizeString);
         // this is to control the rounding error
-        return ((long)(d*1024))*(multiplier/1024);
+        return ((long)(sizeDouble*1024))*(multiplier/1024);
     }
 
     /**
