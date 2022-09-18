@@ -96,7 +96,7 @@ public final class ZFSPool {
      * (as strings like 1.2G), the precision of this information is low.
      */
     public long getUsedSize() {
-        return Math.max(0, getSize()-getAvailableSize());
+        return toSize(getProperty(zpool_prop_t.ZPOOL_PROP_ALLOCATED));
     }
 
     /**
