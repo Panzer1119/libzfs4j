@@ -73,7 +73,7 @@ public final class ZFSPool {
      *
      * <p>
      * Because of the way libzfs report the size information
-     * (as strings like 1.2G), the precision of this information is low.
+     * (as strings like 1.2G), the precision of this information might be low.
      */
     public long getSize() {
         return toSize(getProperty(zpool_prop_t.ZPOOL_PROP_SIZE));
@@ -84,7 +84,7 @@ public final class ZFSPool {
      *
      * <p>
      * Because of the way libzfs report the size information
-     * (as strings like 1.2G), the precision of this information is low.
+     * (as strings like 1.2G), the precision of this information might be low.
      */
     public long getAvailableSize() {
         return toSize(getProperty(zpool_prop_t.ZPOOL_PROP_FREE));
@@ -95,7 +95,7 @@ public final class ZFSPool {
      *
      * <p>
      * Because of the way libzfs report the size information
-     * (as strings like 1.2G), the precision of this information is low.
+     * (as strings like 1.2G), the precision of this information might be low.
      */
     public long getUsedSize() {
         return toSize(getProperty(zpool_prop_t.ZPOOL_PROP_ALLOCATED));
