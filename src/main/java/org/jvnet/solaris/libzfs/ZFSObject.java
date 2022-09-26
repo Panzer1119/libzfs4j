@@ -31,12 +31,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.jvnet.solaris.libzfs.ACLBuilder.PermissionBuilder;
-import org.jvnet.solaris.libzfs.jna.libzfs;
-import org.jvnet.solaris.libzfs.jna.zfs_handle_t;
-import org.jvnet.solaris.libzfs.jna.zfs_prop_t;
-import org.jvnet.solaris.libzfs.jna.zfs_type_t;
+import org.jvnet.solaris.libzfs.jna.*;
 import org.jvnet.solaris.nvlist.jna.nvlist_t;
 
 import com.sun.jna.Memory;
@@ -109,6 +107,59 @@ public abstract class ZFSObject implements Comparable<ZFSObject>, ZFSContainer {
             return -1;
         }
         return 0;
+    }
+    
+    /**
+     * Gets the size that's used by this object in bytes.
+     *
+     * <p>
+     * Because of the way libzfs report the size information
+     * (as strings like 1.2G), the precision of this information might be low.
+     */
+    public long getUsedSize() {
+        return toSize(getZfsProperty(zfs_prop_t.ZFS_PROP_USED));
+    }
+    
+    /**
+     * Gets the size that's referenced by this object in bytes.
+     *
+     * <p>
+     * Because of the way libzfs report the size information
+     * (as strings like 1.2G), the precision of this information might be low.
+     */
+    public long getReferencedSize() {
+        return toSize(getZfsProperty(zfs_prop_t.ZFS_PROP_REFERENCED));
+    }
+    
+    private static final Pattern PATTERN_NUMERIC = Pattern.compile("^\\d+$");
+    private static final Pattern PATTERN_NUMERIC_OR_DECIMAL = Pattern.compile("^\\d+(?:[,.]\\d+)?$");
+    
+    /**
+     * @param formattedSizeString
+     *      String that represents a size
+     */
+    private long toSize(String formattedSizeString) {
+        if (PATTERN_NUMERIC.matcher(formattedSizeString).matches()) {
+            return Long.parseLong(formattedSizeString);
+        }
+        final int sizeStringLength = formattedSizeString.length() - 1;
+        final String sizeString = formattedSizeString.substring(0, sizeStringLength);
+        if (!PATTERN_NUMERIC_OR_DECIMAL.matcher(sizeString).matches()) {
+            throw new ZFSException(this.library, String.format("Formatted size string \"%s\" is neither numeric nor decimal", formattedSizeString));
+        }
+        final char sizeMagnitude = formattedSizeString.toUpperCase().charAt(sizeStringLength);
+        long multiplier = 1;
+        switch(sizeMagnitude) {
+            case 'P':   multiplier *= 1024; // fall through
+            case 'T':   multiplier *= 1024; // fall through
+            case 'G':   multiplier *= 1024; // fall through
+            case 'M':   multiplier *= 1024; // fall through
+            case 'K':   multiplier *= 1024; break;
+            default: throw new ZFSException(this.library, String.format("Formatted size string \"%s\" contains illegal symbols", formattedSizeString));
+        }
+        final double sizeDouble = Double.parseDouble(sizeString);
+        // this is to control the rounding error
+        return ((long)(sizeDouble*1024))*(multiplier/1024);
     }
 
     public List<ZFSObject> children() {
