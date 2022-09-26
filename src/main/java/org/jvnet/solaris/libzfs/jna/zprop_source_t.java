@@ -26,5 +26,6 @@ enum zprop_source_t {
 	ZPROP_SRC_DEFAULT, // = 0x2,
 	ZPROP_SRC_TEMPORARY, // = 0x4,
 	ZPROP_SRC_LOCAL, // = 0x8,
-	ZPROP_SRC_INHERITED // = 0x10
+	ZPROP_SRC_INHERITED, // = 0x10
+	ZPROP_SRC_RECEIVED // = 0x20
 }
