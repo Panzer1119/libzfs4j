@@ -34,7 +34,16 @@ public enum vdev_aux_t {
 	VDEV_AUX_BAD_LABEL,	/* the label is OK but invalid		*/
 	VDEV_AUX_VERSION_NEWER,	/* on-disk version is too new		*/
 	VDEV_AUX_VERSION_OLDER,	/* on-disk version is too old		*/
+	VDEV_AUX_UNSUP_FEAT,	/* unsupported features			*/
 	VDEV_AUX_SPARED,	/* hot spare used in another pool	*/
 	VDEV_AUX_ERR_EXCEEDED,	/* too many errors			*/
-	VDEV_AUX_IO_FAILURE	/* experienced I/O failure		*/
+	VDEV_AUX_IO_FAILURE,	/* experienced I/O failure		*/
+	VDEV_AUX_BAD_LOG,	/* cannot read log chain(s)		*/
+	VDEV_AUX_EXTERNAL,	/* external diagnosis or forced fault	*/
+	VDEV_AUX_SPLIT_POOL,	/* vdev was split off into another pool	*/
+	VDEV_AUX_BAD_ASHIFT,	/* vdev ashift is invalid		*/
+	VDEV_AUX_EXTERNAL_PERSIST,	/* persistent forced fault	*/
+	VDEV_AUX_ACTIVE,	/* vdev active on a different host	*/
+	VDEV_AUX_CHILDREN_OFFLINE, /* all children are offline		*/
+	VDEV_AUX_ASHIFT_TOO_BIG, /* vdev's min block size is too large   */
 };
