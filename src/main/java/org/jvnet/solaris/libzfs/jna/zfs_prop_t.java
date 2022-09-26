@@ -124,5 +124,6 @@ public enum zfs_prop_t {
     ZFS_PROP_IVSET_GUID,        /* not exposed to the user */
     ZFS_PROP_REDACTED,
     ZFS_PROP_REDACT_SNAPS,
-    ZFS_NUM_PROPS
+    ZFS_PROP_SNAPSHOTS_CHANGED,
+	ZFS_NUM_PROPS
 }
